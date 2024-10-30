@@ -1,0 +1,47 @@
+id,product_name,product_code,ean,current_stock,location,supplier,status,unit_price,sale_price
+1,Monster Pacific Punch,MOPA,200,5,Kjølelager,NORGESGRUPPEN,Active,23,0
+2,Sprite 0.5L,SPRF,0,3,Kjølelager,NORGESGRUPPEN,Active,0,0
+3,Villa 0.5L,VILF,0,7,Kjølelager,NORGESGRUPPEN,Active,20.1585,0
+4,Pepsi Max 0.5L,PEPM,7044610874661,9,Kjølelager,NORGESGRUPPEN,Active,2,0
+5,Monster Ultra White,MOUW,0,5,Kjølelager,NORGESGRUPPEN,Active,22.976,0
+6,Monster Ultra Fiesta,MOUF,0,0,Kjølelager,NORGESGRUPPEN,Active,21.5385,0
+7,Monster Pipeline Punch,MOPP,2000,3,Kjølelager,NORGESGRUPPEN,Active,21.5385,0
+8,Twix,TWIX,0,4,Kjølelager,NORGESGRUPPEN,Active,21.1255,0
+9,Nescafe Pose,NESC,0,6,Kjølelager,NORGESGRUPPEN,Inactive,4.6,0
+10,Melkesjokolade,SJOK,0,6,Kjølelager,NORGESGRUPPEN,Active,22.0455,0
+11,Mr. Lee Kjøtt,MLKJ,0,0,Kjølelager,NORGESGRUPPEN,Active,12.236,0
+12,Maarud Tortilla Chips,MTOR,0,0,Kjølelager,NORGESGRUPPEN,Active,13.6275,0
+13,Sour Cream & Onion,MSOC,0,7,Kjølelager,NORGESGRUPPEN,Active,0,0
+14,Mr. Lee Kylling,MLKY,7037610063715,15,Kjølelager,NORGESGRUPPEN,Active,11.9945,0
+15,Vepsebol,VEPS,7041111117198,9,Kjølelager,NORGESGRUPPEN,Inactive,0,0
+16,New Energy,NEWE,7037710024333,18,Kjølelager,NORGESGRUPPEN,Active,15.456,0
+17,Knatter Melon,KNAM,7041111149472,16,Kjølelager,NORGESGRUPPEN,Active,14.904,0
+18,DAIM,DAIM,7310511250706,6,Kjølelager,NORGESGRUPPEN,Active,12.0865,0
+19,Hallonsura,HALL,7350039457676,2,Kjølelager,NORGESGRUPPEN,Active,0,0
+20,Smarties Hexatube,SMHX,40345123,20,Kjølelager,NORGESGRUPPEN,Active,0,0
+21,Smash Salt Karamell,SMSK,7037710020069,2,Kjølelager,NORGESGRUPPEN,Active,18.2045,0
+22,Welchs Fruit Snacks,WLCH,34856002550,49,EXTERNAL,NORGESGRUPPEN,Active,6.9,0
+23,Hobby,HOBB,7037711023489,54,Kjølelager,NORGESGRUPPEN,Active,16.859,0
+24,Pringles Paprika,PRPA,5053990161607,12,Kjølelager,NORGESGRUPPEN,Active,0,0
+25,Pringles Original,PROG,5053990107339,12,Kjølelager,NORGESGRUPPEN,Active,0,0
+26,Fanta Original,FNTO,5000112669220,10,Kjølelager,NORGESGRUPPEN,Active,19.9515,0
+27,Red Bull 0.5L,RB05,9002490241407,21,Kjølelager,NORGESGRUPPEN,Active,32.751,0
+28,Monster Ultra Rosa,MOUR,5060947541214,2,Kjølelager,NORGESGRUPPEN,Active,21.5385,0
+29,Fuze Tea Ice,ISTE,90370953,1,Kjølelager,NORGESGRUPPEN,Active,0,0
+30,Battery Original,BTRO,7044610806228,8,Kjølelager,NORGESGRUPPEN,Active,21.228,0
+31,Red Bull Sugar Free,RBSF,9002490241438,16,Kjølelager,NORGESGRUPPEN,Active,36.8335,0
+32,Isklar Sitron,ISKS,70118049,9,Kjølelager,NORGESGRUPPEN,Active,0,0
+33,Red Bull 0.33L,RB33,90433917,3,Kjølelager,NORGESGRUPPEN,Active,18.79,0
+34,Dr. Pepper,DRPP,7310401036229,18,Kjølelager,NORGESGRUPPEN,Active,21.3545,0
+35,Urge 0.5L,URGF,5000112636918,17,Kjølelager,NORGESGRUPPEN,Active,19.9515,0
+36,Coca Cola Original Flaske,CCOF,5000112636833,27,Kjølelager,NORGESGRUPPEN,Active,18.491,0
+37,Farris Lime,FARL,7044610874760,11,Kjølelager,NORGESGRUPPEN,Active,0,0
+38,Farris Bris Mango,FBMP,7044610874739,11,Kjølelager,NORGESGRUPPEN,Active,0,0
+39,Coca Cola Zero Flaske,CCZF,5000112636840,46,Kjølelager,NORGESGRUPPEN,Active,17.6975,0
+40,Monster Lewis Hamilton,MOLH,5060896625638,5,Kjølelager,NORGESGRUPPEN,Active,22.976,0
+41,Monster Aussie Lemonade,MOAL,5060947542921,6,Kjølelager,NORGESGRUPPEN,Active,22.9875,0
+42,Mountain Dew Code Red,MDCR,1206201,13,Kjølelager,NORGESGRUPPEN,Active,23,0
+43,Mountain Dew Voltage,MDVO,12000028632,12,Yerba Mate,NORGESGRUPPEN,Active,23,0
+44,Monster MIXX,MOMI,5060947545458,18,Kjølelager,Yerba Mate,Inactive,23,0
+45,Coca Cola Oreo,CCOR,5449000329691,22,Kjølelager,Yerba Mate,Inactive,0,0
+46,Monster Original,MOOG,5060166693732,16,Kjølelager,NORGESGRUPPEN,Active,22.9875,0
