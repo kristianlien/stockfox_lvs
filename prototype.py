@@ -67,6 +67,37 @@ def addEanToProduct():
             print(f"Error: {e}")
             time.sleep(0.5)
 
+def addPriceToProduct():
+    flag = ""
+    while True:
+        cursor.execute("SELECT product_name FROM products WHERE unit_price=?", (flag,))
+        result = cursor.fetchall()
+        print("Missing prices:")
+        for result in result:
+            print(result[result])
+        AETP_pcode = input("Input product code (or press Enter to exit): ")
+        if AETP_pcode == "":
+            menu()
+            break
+        
+        AETP_ean = input("Add price: ")
+        
+        try:
+            cursor.execute("UPDATE products SET ean=? WHERE product_code=?", (AETP_ean, AETP_pcode))
+            conn.commit()
+            
+            cursor.execute("SELECT product_name, ean FROM products WHERE product_code=?", (AETP_pcode,))
+            check = cursor.fetchone() 
+            
+            if check:
+                print(f"'{check[0]}' updated EAN to: {check[1]}")
+            else:
+                print("Product not found.")
+        
+        except Exception as e:
+            print(f"Error: {e}")
+            time.sleep(0.5)
+
 
 def backup_products_to_csv():
     # Set the database name
@@ -149,13 +180,40 @@ def db_init():
                         sale_price TEXT
 
                     )''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS LVS02 (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        product_name TEXT NOT NULL,
+                        product_code TEXT NOT NULL,
+                        ean INTEGER,
+                        current_stock INTEGER,
+                        location TEXT,
+                        supplier TEXT,
+                        status TEXT,
+                        unit_price TEXT,
+                        sale_price TEXT
+
+                    )''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS stats (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         product_amount TEXT,
                         net_income TEXT,
                         profit TEXT
 
-                    )''')    
+                    )''')   
+    cursor.execute('''CREATE TABLE IF NOT EXISTS shopping_list(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    product_name TEXT NOT NULL,
+                    product_code TEXT NOT NULL,
+                    ean INTEGER,
+                    current_stock INTEGER,
+                    location TEXT,
+                    supplier TEXT,
+                    status TEXT,
+                    unit_price TEXT,
+                    sale_price TEXT
+
+                    )''')
+     
     conn.commit()
 
 def get_keypress():
@@ -220,11 +278,31 @@ def updateStockMenu():
         time.sleep(0.5)
         updateStockMenu()
 
+def picklist_menu():
+    console_clear()
+    print("Generate picklist:")
+    print("")
+    print("1. Picklist")
+    print("2. View/edit shopping list")
+    print("")
+    print("0. Exit")
+    choice = get_keypress()
+    if choice == "1":
+        generatePicklist()
+    elif choice == "2":
+        shopping_list()
+    elif choice == "0":
+        menu()
+    else:
+        print("Invalid choice")
+        time.sleep(0.5)
+        picklist_menu()
+
 def run(choice):
     if choice == "1":
         viewStock()
     elif choice == "2":
-        generatePicklist()
+        picklist_menu()
     elif choice == "3":
         updateStockMenu()
     elif choice == "4":
@@ -580,11 +658,8 @@ def generatePicklist():
                         else:
                             # Partially fulfill from side storage, remainder from main storage
                             remainder = quantity - side_stock
-                            if remainder <= main_stock:
-                                product_quantities[product_name] = {"from_side": side_stock, "from_main": remainder}
-                            else:
-                                print(f"Not enough stock available. Available in side storage: {side_stock}, main storage: {main_stock}")
-                                continue
+                            product_quantities[product_name] = {"from_side": side_stock, "from_main": remainder}
+
                     else:
                         # If side storage is empty, fulfill from main storage
                         if quantity <= main_stock:
@@ -705,6 +780,203 @@ def generatePicklist():
     else:
         print("Inventory not updated.")
         pressAnyKeyForMenu()
+
+def shopping_list():
+    console_clear()
+    print("Shopping list:")
+    print("")
+    print("1. Add to shopping list")
+    print("2. View shopping list")
+    print("3. Edit shopping list")
+    print("")
+    print("0. Back")
+    choice = get_keypress()
+    if choice == "1":
+        shopping_list_ADD()
+    elif choice == "2":
+        shopping_list_VIEW()
+    elif choice == "3":
+        shopping_list_EDIT()
+    elif choice == "0":
+        picklist_menu()
+    else:
+        print("Invalid choice")
+        time.sleep(0.5)
+        shopping_list()
+
+def shopping_list_ADD():
+    console_clear()
+    print("Adding to shopping list:\n")
+
+    while True:
+        sla_pcode = input("Please enter product code or scan EAN (or press Enter to exit): ").strip().upper()
+        if sla_pcode == "":
+            shopping_list_VIEW()  # Change to the correct function to view the shopping list
+            break  # Exit the loop when shopping list is called
+        
+        # Determine if the input is an EAN (digits) or a product code (letters)
+        if sla_pcode.isdigit():
+            query = "SELECT * FROM products WHERE ean=?"
+        elif sla_pcode.isalpha():
+            query = "SELECT * FROM products WHERE product_code=?"
+        else:
+            print("Invalid input. Please enter a valid product code or EAN.")
+            continue  # Skip to the next iteration
+
+        cursor.execute(query, (sla_pcode,))
+        product_info = cursor.fetchone()
+        
+        if product_info:
+            # Unpack product information
+            product_name, product_code, ean, current_stock, location, supplier, status, unit_price, sale_price = product_info[1:]
+
+            cursor.execute("SELECT current_stock FROM products WHERE ean=?", (sla_pcode,))
+            current_quantity = cursor.fetchone()
+            current_quantity = int(current_quantity[0]) if current_quantity else 0  # Extract the value or default to 0
+
+            # Fetch the current stock from 'lvs01' table
+            cursor.execute("SELECT current_stock FROM lvs01 WHERE ean=?", (sla_pcode,))
+            current_quantity_lvs01 = cursor.fetchone()
+            current_quantity_lvs01 = int(current_quantity_lvs01[0]) if current_quantity_lvs01 else 0  # Extract the value or default to 0
+
+            # Fetch the current stock from 'lvs02' table
+            cursor.execute("SELECT current_stock FROM lvs02 WHERE ean=?", (sla_pcode,))
+            current_quantity_lvs02 = cursor.fetchone()
+            current_quantity_lvs02 = int(current_quantity_lvs02[0]) if current_quantity_lvs02 else 0  # Extract the value or default to 0
+
+            # Calculate the total quantity
+            total_quantity = current_quantity + current_quantity_lvs01 + current_quantity_lvs02
+
+            cursor.execute("SELECT current_stock FROM shopping_list WHERE ean=? or product_code=?", (sla_pcode, sla_pcode,))
+            current_quantity_shopping_list = cursor.fetchone()
+
+            # Print the product info and current stock
+            print(f"{product_name} has {total_quantity} in storage (Main storage: {current_quantity}, LVS01: {current_quantity_lvs01}, LVS02: {current_quantity_lvs02}, Shopping list: {current_quantity_shopping_list[0]})")
+
+            # Prompt user for the quantity to add to the shopping list
+            sla_product_qty = input(f"Please enter the quantity of {product_name} you want to add to the shopping list: ").strip()
+            
+            if not sla_product_qty.isdigit() or int(sla_product_qty) <= 0:
+                print("Please enter a valid positive quantity.")
+                continue  # Skip to the next iteration
+            
+            sla_product_qty = int(sla_product_qty)
+
+            # Check if product already exists in the shopping list
+            cursor.execute("SELECT current_stock FROM shopping_list WHERE product_name=? AND product_code=?", (product_name, product_code))
+            existing_result = cursor.fetchone()
+
+            if existing_result:
+                # Update the quantity if product already exists
+                new_quantity = existing_result[0] + sla_product_qty
+                cursor.execute("UPDATE shopping_list SET current_stock=? WHERE product_name=? AND product_code=?", (new_quantity, product_name, product_code))
+            else:
+                # Insert new product into the shopping list
+                cursor.execute('''INSERT INTO shopping_list (product_name, product_code, ean, current_stock, location, supplier, status, unit_price, sale_price) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
+                                  (product_name, product_code, ean, sla_product_qty, location, supplier, status, unit_price, sale_price))
+
+            # Commit changes to the database
+            conn.commit()
+            print(f"{sla_product_qty} of {product_name} has been added to the shopping list.")
+
+            # Update total quantity for items in the shopping list
+            cursor.execute("SELECT SUM(current_stock) FROM shopping_list WHERE product_name=? AND product_code=?", (product_name, product_code))
+            shopping_list_quantity = cursor.fetchone()
+            total_in_shopping_list = shopping_list_quantity[0] if shopping_list_quantity and shopping_list_quantity[0] else 0
+            print(f"Total {product_name} in shopping list: {total_in_shopping_list}")
+
+        else:
+            print("Product not found. Would you like to add a custom product? (Y/N)")
+            if input().strip().lower() == 'y':
+                # Prompt for the custom product name only
+                product_name = sla_pcode.strip()
+
+                # Default values for other fields
+                product_code = "CUSTOM"  # or any default logic you prefer
+                ean = None
+                current_stock = input(f"Please input quantity for {sla_pcode}: ")
+                location = "Unspecified"
+                supplier = "Unknown"
+                status = "Active"
+                unit_price = 0.0
+                sale_price = 0.0
+
+                # Insert custom product into the products table
+
+                # Now add to the shopping list
+                cursor.execute('''INSERT INTO shopping_list (product_name, product_code, ean, current_stock, location, supplier, status, unit_price, sale_price) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
+                                  (product_name, product_code, ean, current_stock, location, supplier, status, unit_price, sale_price))  # Default quantity for custom product
+
+                # Commit changes to the database
+                conn.commit()
+                print(f"Custom product {product_name} has been added to the shopping list.")
+
+            else:
+                print("Please check the code or EAN and try again.")
+
+
+def shopping_list_VIEW():
+    console_clear()
+    print("Shopping List:")
+    print("")
+    
+    # Fetch all items from the shopping list
+    cursor.execute("SELECT product_name, product_code, current_stock FROM shopping_list")
+    items = cursor.fetchall()
+    
+    if items:
+        print(f"{'Product Name':<30} {'Product Code':<15} {'Quantity':<10}")
+        print("-" * 60)
+        for item in items:
+            product_name, product_code, current_stock = item
+            print(f"{product_name:<30} {product_code:<15} {current_stock:<10}")
+    else:
+        print("Your shopping list is empty.")
+    
+    print("")
+    print("Press any key to go back")
+    get_keypress()
+    shopping_list()
+
+
+def shopping_list_EDIT():
+    console_clear()
+    print("Edit Shopping List: Remove Item\n")
+
+    # Fetch all items from the shopping list
+    cursor.execute("SELECT product_name, product_code FROM shopping_list")
+    items = cursor.fetchall()
+
+    if items:
+        print(f"{'Product Name':<30} {'Product Code':<15}")
+        print("-" * 45)
+        for index, item in enumerate(items):
+            product_name, product_code = item
+            print(f"{index + 1}. {product_name:<30} {product_code:<15}")
+
+        try:
+            remove_choice = int(input("\nEnter the number of the item you want to remove (or 0 to cancel): "))
+            if remove_choice == 0:
+                return  # Cancel removing item
+
+            if 1 <= remove_choice <= len(items):
+                selected_item = items[remove_choice - 1]
+                product_name, product_code = selected_item
+
+                # Remove the selected item from the shopping list
+                cursor.execute("DELETE FROM shopping_list WHERE product_name=? AND product_code=?", (product_name, product_code))
+                conn.commit()
+                print(f"{product_name} has been removed from the shopping list.")
+            else:
+                print("Invalid selection. Please try again.")
+        except ValueError:
+            print("Please enter a valid number.")
+    else:
+        print("Your shopping list is empty.")
+
+    shopping_list()  # Wait for user input before returning to the menu
 
 
 def updateStock():
@@ -983,7 +1255,7 @@ def newProduct():
     elif status.lower() == "a":
         np_status = "Active"
     elif status.lower() == "i":
-        np_status = "Inactive"
+        np_status = "inactive"
     else:
         np_status = status
     cursor.execute("SELECT * FROM products WHERE product_code=?", (np_pcode,))

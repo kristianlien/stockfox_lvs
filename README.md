@@ -132,3 +132,7 @@ The database schema enforces unique constraints on product_code and ean to preve
 
 ## Support
 Contact stockfox@lienvending.solutions for any questions or support"# stockfox_lvs" 
+
+todo:
+backup script
+host
