@@ -100,34 +100,32 @@ def addPriceToProduct():
 
 
 def backup_products_to_csv():
-    # Set the database name
+    # Set database name
     db_name = 'current_inventory.db'
     
-    # Get the current working directory
+    # Get current directory
     current_directory = os.path.dirname(os.path.abspath(__file__))
 
-    # Get the current date and time for the timestamp
+    # timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     csv_file_name = f"export_{timestamp}.csv"
 
-    # Build the full path for the database and the CSV file
     db_path = os.path.join(current_directory, db_name)
     csv_file_path = os.path.join(current_directory, csv_file_name)
 
-    # Execute a query to fetch all records from the products table
+    # get products
     cursor.execute("SELECT * FROM products")
     rows = cursor.fetchall()
 
-    # Get the column names
+    # column names
     column_names = [description[0] for description in cursor.description]
 
-    # Write to a CSV file
+    # CSV file
     with open(csv_file_path, mode='w', newline='') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(column_names)  # Write the header
         writer.writerows(rows)  # Write all rows
 
-    # Close the connection
     print(f"Backup completed: {csv_file_path}")
     time.sleep(1)
 
@@ -350,11 +348,11 @@ def viewStock():
     cursor.execute("SELECT product_code, current_stock FROM lvs02")
     results_LVS02 = cursor.fetchall()
 
-    # Create dictionaries to quickly lookup side storage stocks by product_code, with safe type conversion
+    # Create dictionaries for quick lookup
     lvs01_dict = {row[0]: int(row[1]) if isinstance(row[1], (int, float)) else 0 for row in results_LVS01}
     lvs02_dict = {row[0]: int(row[1]) if isinstance(row[1], (int, float)) else 0 for row in results_LVS02}
 
-    # Sort main results by status (active first), then location, then stock (lowest first) with safe type conversion
+    # Sort main results by status (active first), then location, then stock (lowest first)
     results.sort(key=lambda row: (
         row[4].lower() != "active" if isinstance(row[4], str) else True,
         row[3].lower() if isinstance(row[3], str) else "",
@@ -369,7 +367,7 @@ def viewStock():
 
     total_stock_value = 0
 
-    # Print results with error handling for missing or invalid values
+    # Print results
     for row in results:
         product_name = row[0] if isinstance(row[0], str) else "Unknown"
         product_code = row[1] if isinstance(row[1], str) else "N/A"
@@ -378,7 +376,7 @@ def viewStock():
         status = row[4] if isinstance(row[4], str) else "N/A"
         unit_price = float(row[5]) if isinstance(row[5], (int, float)) else 0.0
 
-        # Fetch side storage values (set to 0 if product is not in side storage)
+        # Fetch side storage values
         lvs01_stock = lvs01_dict.get(product_code, 0)
         lvs02_stock = lvs02_dict.get(product_code, 0)
 
@@ -511,10 +509,10 @@ def supplyList():
         supplier = stock_data["supplier"]
         products_with_locations.append((product_name, supplier, fill_quantity, location))
 
-    # Sort products by location
+    # Sort products
     products_with_locations.sort(key=lambda item: item[3])
 
-    # Create HTML content
+    # Create HTML
     html_content = f'''
     <html>
     <head>
@@ -554,7 +552,7 @@ def supplyList():
     </html>
     '''
 
-    # Save and open the HTML file
+    # Save and open HTML file
     html_file = "fillinglist.html"
     with open(html_file, "w") as file:
         file.write(html_content)
@@ -578,7 +576,7 @@ def generatePicklist():
     print("4. Supply list")
     print("")
 
-    # Prompt user to choose which machine (or none)
+    # Prompt user to choose machine
     machine_choice = get_keypress()
 
     if machine_choice == "1":
@@ -811,8 +809,8 @@ def shopping_list_ADD():
     while True:
         sla_pcode = input("Please enter product code or scan EAN (or press Enter to exit): ").strip().upper()
         if sla_pcode == "":
-            shopping_list_VIEW()  # Change to the correct function to view the shopping list
-            break  # Exit the loop when shopping list is called
+            shopping_list_VIEW()
+            break
         
         # Determine if the input is an EAN (digits) or a product code (letters)
         if sla_pcode.isdigit():
@@ -834,17 +832,17 @@ def shopping_list_ADD():
             current_quantity = cursor.fetchone()
             current_quantity = int(current_quantity[0]) if current_quantity else 0  # Extract the value or default to 0
 
-            # Fetch the current stock from 'lvs01' table
+            # Fetch the current stock from 'lvs01' 
             cursor.execute("SELECT current_stock FROM lvs01 WHERE ean=?", (sla_pcode,))
             current_quantity_lvs01 = cursor.fetchone()
             current_quantity_lvs01 = int(current_quantity_lvs01[0]) if current_quantity_lvs01 else 0  # Extract the value or default to 0
 
-            # Fetch the current stock from 'lvs02' table
+            # Fetch the current stock from 'lvs02' 
             cursor.execute("SELECT current_stock FROM lvs02 WHERE ean=?", (sla_pcode,))
             current_quantity_lvs02 = cursor.fetchone()
             current_quantity_lvs02 = int(current_quantity_lvs02[0]) if current_quantity_lvs02 else 0  # Extract the value or default to 0
 
-            # Calculate the total quantity
+            #total quantity
             total_quantity = current_quantity + current_quantity_lvs01 + current_quantity_lvs02
 
             cursor.execute("SELECT current_stock FROM shopping_list WHERE ean=? or product_code=?", (sla_pcode, sla_pcode,))
@@ -853,16 +851,16 @@ def shopping_list_ADD():
             # Print the product info and current stock
             print(f"{product_name} has {total_quantity} in storage (Main storage: {current_quantity}, LVS01: {current_quantity_lvs01}, LVS02: {current_quantity_lvs02}, Shopping list: {current_quantity_shopping_list[0]})")
 
-            # Prompt user for the quantity to add to the shopping list
+            # shopping list
             sla_product_qty = input(f"Please enter the quantity of {product_name} you want to add to the shopping list: ").strip()
             
             if not sla_product_qty.isdigit() or int(sla_product_qty) <= 0:
                 print("Please enter a valid positive quantity.")
-                continue  # Skip to the next iteration
+                continue
             
             sla_product_qty = int(sla_product_qty)
 
-            # Check if product already exists in the shopping list
+            # Check if product already exists
             cursor.execute("SELECT current_stock FROM shopping_list WHERE product_name=? AND product_code=?", (product_name, product_code))
             existing_result = cursor.fetchone()
 
@@ -876,7 +874,6 @@ def shopping_list_ADD():
                                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
                                   (product_name, product_code, ean, sla_product_qty, location, supplier, status, unit_price, sale_price))
 
-            # Commit changes to the database
             conn.commit()
             print(f"{sla_product_qty} of {product_name} has been added to the shopping list.")
 
@@ -892,8 +889,8 @@ def shopping_list_ADD():
                 # Prompt for the custom product name only
                 product_name = sla_pcode.strip()
 
-                # Default values for other fields
-                product_code = "CUSTOM"  # or any default logic you prefer
+                # Default values
+                product_code = "CUSTOM"
                 ean = None
                 current_stock = input(f"Please input quantity for {sla_pcode}: ")
                 location = "Unspecified"
@@ -904,12 +901,10 @@ def shopping_list_ADD():
 
                 # Insert custom product into the products table
 
-                # Now add to the shopping list
                 cursor.execute('''INSERT INTO shopping_list (product_name, product_code, ean, current_stock, location, supplier, status, unit_price, sale_price) 
                                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
                                   (product_name, product_code, ean, current_stock, location, supplier, status, unit_price, sale_price))  # Default quantity for custom product
 
-                # Commit changes to the database
                 conn.commit()
                 print(f"Custom product {product_name} has been added to the shopping list.")
 
@@ -959,7 +954,7 @@ def shopping_list_EDIT():
         try:
             remove_choice = int(input("\nEnter the number of the item you want to remove (or 0 to cancel): "))
             if remove_choice == 0:
-                return  # Cancel removing item
+                return 
 
             if 1 <= remove_choice <= len(items):
                 selected_item = items[remove_choice - 1]
@@ -1095,7 +1090,7 @@ def manageStorage(storage_table):
     print("")
     print("1. Add stock from main storage")
     print("2. Remove stock to main storage")
-    print("3. Add stock directly to storage")  # New option
+    print("3. Add stock directly to storage") 
     print("")
     choice = get_keypress()
 
@@ -1107,9 +1102,9 @@ def manageStorage(storage_table):
     elif choice == "2":
         transferStock(storage_table, 'products')
     elif choice == "3":
-        addStockDirectly(storage_table)  # Call new function to add stock
+        addStockDirectly(storage_table) 
     else:
-        machineSideStorage()  # Re-run if invalid option
+        machineSideStorage() 
 
 
 def transferStock(from_table, to_table):
@@ -1130,20 +1125,20 @@ def transferStock(from_table, to_table):
         if result is None:
             print(f"Product with code {product_code} not found in {from_table}.")
             pressAnyKeyForMenu()
-            continue  # Continue to the next iteration of the loop
-
+            continue 
+        
         current_stock = result[0]
 
         if current_stock < amount:
             print(f"Not enough stock in {from_table}. Available: {current_stock}")
             pressAnyKeyForMenu()
-            continue  # Continue to the next iteration of the loop
+            continue
 
-        # Deduct stock from source table
+        # take stock from source table
         new_stock_from = current_stock - amount
         cursor.execute(f"UPDATE {from_table} SET current_stock = ? WHERE product_code = ?", (new_stock_from, product_code.upper()))
 
-        # Add stock to destination table
+        # add stock to destination table
         cursor.execute(f"SELECT current_stock FROM {to_table} WHERE product_code = ?", (product_code,))
         result = cursor.fetchone()
 
@@ -1172,20 +1167,20 @@ def addStockDirectly(storage_table):
             break
         amount = int(amount)
 
-        # Check if the product exists in the PRODUCTS table
+        # Check if the product exists
         cursor.execute("SELECT product_name, product_code, ean, location, supplier, status, unit_price, sale_price FROM PRODUCTS WHERE product_code = ?", (product_code.upper(),))
         product_info = cursor.fetchone()
 
         if product_info:
-            # Product exists in PRODUCTS, insert it into the specified storage_table with the given stock amount
+            # Product exists
             cursor.execute(
                 f"INSERT INTO {storage_table} (product_name, product_code, ean, current_stock, location, supplier, status, unit_price, sale_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (*product_info[:3], amount, *product_info[3:])
             )
-            conn.commit()  # Commit after inserting
+            conn.commit()  
             print(f"Added {amount} units of {product_code.upper()} to {storage_table}.")
         else:
-            # Product doesn't exist, inform the user
+            # Product doesn't exist
             print(f"Product with code {product_code.upper()} not found in PRODUCTS table. No stock added.")
             
     manageStorage(storage_table)
@@ -1193,14 +1188,12 @@ def addStockDirectly(storage_table):
 
 
 
-
-# New function to view stocks in all side storages
 def viewAllSideStorage():
     console_clear()
     print("Viewing all side storages:")
     print("")
 
-    for storage_table in ['LVS01', 'LVS02']:  # Add more if needed
+    for storage_table in ['LVS01', 'LVS02']: 
         print(f"--- {storage_table} ---")
         cursor.execute(f"SELECT product_name, product_code, current_stock FROM {storage_table}")
         products = cursor.fetchall()
@@ -1212,7 +1205,7 @@ def viewAllSideStorage():
         else:
             print(f"No stock in {storage_table}.")
         
-        print("")  # Space between different storages
+        print("")  # Space between
 
     print("End of side storage view.")
 
@@ -1506,8 +1499,8 @@ def viewProductDetails():
                 result = cursor.fetchall()
                 
                 if result:
-                    if len(result[0]) > 7:  # Ensure there are enough columns in the result
-                        status = result[0][7]  # Assuming status is at index 7
+                    if len(result[0]) > 7: 
+                        status = result[0][7]  
                         if status.lower() == "active":
                             status_display = bcolors.OKGREEN + "██ ACTIVE" + bcolors.ENDC
                         elif status.lower() == "inactive":
@@ -1515,7 +1508,6 @@ def viewProductDetails():
                         else:
                             status_display = status
 
-                        # Accessing product details safely
                         print("")
                         print(f"Product name: {result[0][1]}")  # Access first product
                         print(f"Product code: {result[0][2]}")
@@ -1538,8 +1530,8 @@ def viewProductDetails():
                 result = cursor.fetchall()
 
                 if result:
-                    if len(result[0]) > 7:  # Ensure there are enough columns in the result
-                        status = result[0][7]  # Get status from the first product
+                    if len(result[0]) > 7:  
+                        status = result[0][7] 
                         if status.lower() == "active":
                             status_display = bcolors.OKGREEN + "██ ACTIVE" + bcolors.ENDC
                         elif status.lower() == "inactive":
@@ -1547,7 +1539,6 @@ def viewProductDetails():
                         else:
                             status_display = status
 
-                        # Accessing product details safely
                         print("")
                         print(f"Product name: {result[0][1]}")
                         print(f"Product code: {result[0][2]}")
